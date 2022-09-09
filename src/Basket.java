@@ -13,8 +13,8 @@ public class Basket implements Serializable {
     }
 
     // метод добавления amount штук продукта номер productNum в корзину;
-    void addToCart(int productNum, int amount) { //0,3
-        orderedProducts[productNum] += amount; // [0] = 3
+    void addToCart(int productNum, int amount) { //0,2
+        orderedProducts[productNum] += amount; // [0] = 2
         sumProducts += amount * prices[productNum]; //
     }
 
@@ -32,48 +32,16 @@ public class Basket implements Serializable {
         System.out.println("Итого " + sumProducts + " руб");
     }
 
-    //метод сохранения корзины в текстовый файл; использовать встроенные сериализаторы нельзя;
-    public void saveTxt(File textFile) throws IOException {
-        try (BufferedWriter br = new BufferedWriter(new FileWriter(textFile))) {
-            for (String product : products) {
-                br.write(product + " ");
-            }
-            br.newLine();
-            for (int basketProducts : orderedProducts) {
-                br.write(basketProducts + " ");
-            }
-            br.newLine();
-            for (int price : prices)
-                br.write(price + " ");
-            br.newLine();
-            br.write(String.valueOf(sumProducts));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    public void saveBin(File file) throws IOException {
+        ObjectOutputStream dos = new ObjectOutputStream(new FileOutputStream("basket.bin"));
+        dos.writeObject(this);
+        dos.close();
     }
 
-    //статический(!) метод восстановления объекта корзины из текстового файла
-    public static Basket loadFromTxtFile(File textFile) {
-        Basket basket = null;
-        try (BufferedReader br = new BufferedReader(new FileReader(textFile))) {
-            String[] products = br.readLine().split(" ");
-            String[] ordProducts = br.readLine().split(" ");
-            int[] orderedProducts = new int[products.length];
-            for (int i = 0; i < ordProducts.length; i++) {
-                orderedProducts[i] = Integer.parseInt(ordProducts[i]);
-            }
-            String[] price = br.readLine().split(" ");
-            int[] prices = new int[products.length];
-            for (int i = 0; i < prices.length; i++) {
-                prices[i] = Integer.parseInt(price[i]);
-            }
-            basket = new Basket(products, prices);
-            basket.orderedProducts = orderedProducts;
-            basket.sumProducts = Integer.parseInt(br.readLine());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static Basket loadFromBinFile(File file) throws IOException, ClassNotFoundException {
+        ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+        Basket basket = (Basket) in.readObject();
+        in.close();
         return basket;
     }
 }
