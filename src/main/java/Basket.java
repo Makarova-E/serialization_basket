@@ -1,8 +1,7 @@
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 import org.json.simple.parser.ParseException;
-
 import java.io.*;
 
 public class Basket implements Serializable {
@@ -58,25 +57,11 @@ public class Basket implements Serializable {
     }
 
     public void saveJson(File jsonFile) throws IOException {
-        JSONArray product = new JSONArray();
-        for (String p : products) {
-            product.add(p);
-        }
-        JSONArray basketProduct = new JSONArray();
-        for (int bp : orderedProducts) {
-            basketProduct.add(bp);
-        }
-        JSONArray price = new JSONArray();
-        for (int pr : prices) {
-            price.add(pr);
-        }
-        JSONObject obj = new JSONObject();
-        obj.put("product", product);
-        obj.put("basketProduct", basketProduct);
-        obj.put("price", price);
-        obj.put("sumProducts", sumProducts);
-        try (FileWriter file = new FileWriter("basket.json")) {
-            file.write(obj.toJSONString());
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+
+        try (FileWriter file = new FileWriter(jsonFile)) {
+            file.write(gson.toJson(this));
         }
     }
 
@@ -106,31 +91,10 @@ public class Basket implements Serializable {
     }
 
     public static Basket loadFromJsonFile(File jsonFile) throws IOException, ParseException {
-        Basket basket = null;
-        JSONParser parser = new JSONParser();
-        Object obj = parser.parse(new FileReader(jsonFile));
-        JSONObject jsonObject = (JSONObject) obj;
-
-        JSONArray product = (JSONArray) jsonObject.get("product");
-        JSONArray basketProduct = (JSONArray) jsonObject.get("basketProduct");
-        JSONArray price = (JSONArray) jsonObject.get("price");
-
-        String[] products = new String[product.size()];
-        for (int i = 0; i < products.length; i++) {
-            products[i] = (String) product.get(i);
+        try (JsonReader reader = new JsonReader(new FileReader(jsonFile))) {
+            Gson gson = new Gson();
+            Basket basket = gson.fromJson(reader, Basket.class);
+            return basket;
         }
-
-        int[] orderedProducts = new int[basketProduct.size()];
-        for (int i = 0; i < orderedProducts.length; i++) {
-            orderedProducts[i] = Integer.valueOf(basketProduct.get(i).toString());
-        }
-        int[] prices = new int[price.size()];
-        for (int i = 0; i < prices.length; i++) {
-            prices[i] = Integer.valueOf(price.get(i).toString());
-        }
-        basket = new Basket(products, prices);
-        basket.orderedProducts = orderedProducts;
-        basket.sumProducts = Integer.valueOf(jsonObject.get("sumProducts").toString());
-        return basket;
     }
 }

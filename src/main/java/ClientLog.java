@@ -7,9 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientLog {
-    CSVWriter csvWriter;
-    protected List<String[]> clientLog = new ArrayList<>();
-    String[] firstString = {"productNum", "amount"};
+    private List<String[]> clientLog;
+    private String[] firstString = {"productNum", "amount"};
+
+    public List<String[]> getClientLog() {
+        return clientLog;
+    }
+
+    public String[] getFirstString() {
+        return firstString;
+    }
 
     public void log(int productNum, int amount) {
         clientLog.add(new String[]
